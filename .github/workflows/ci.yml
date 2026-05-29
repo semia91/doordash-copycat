@@ -1,0 +1,44 @@
+name: DoorDash Fee Service CI
+
+# Déclencheur : On lance le pipeline à chaque "push" sur la branche main
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  smoke-tests:
+    # Le serveur distant va tourner sur une machine virtuelle Ubuntu
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. On clone le code du dépôt GitHub sur la machine virtuelle
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # 2. On construit l'image Docker à partir du Dockerfile du projet
+      - name: Build Docker Image
+        run: docker build -t fee-service .
+
+      # 3. On démarre le conteneur en arrière-plan (flag -d) sur le port 8000
+      - name: Run Docker Container
+        run: docker run -d --name doordash-container -p 8000:8000 fee-service
+
+      # 4. On attend 3 secondes que l'API FastAPI démarre correctement
+      - name: Wait for API to start
+        run: sleep 3
+
+      # 5. On teste les endpoints de base avec la commande 'curl'
+      - name: Run Smoke Tests (curl)
+        run: |
+          echo "Testing Root Endpoint..."
+          curl -f http://localhost:8000/
+          
+          echo "Testing Health Endpoint..."
+          curl -f http://localhost:8000/health
+
+      # 6. Étape de nettoyage : On arrête et supprime le conteneur, peu importe si les étapes d'avant ont réussi ou échoué
+      - name: Cleanup Container
+        if: always()
+        run: |
+          docker stop doordash-container
+          docker rm doordash-container
