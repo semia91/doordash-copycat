@@ -19,22 +19,23 @@ jobs:
       - name: Build Docker Image
         run: docker build -t fee-service .
 
-      # 3. On démarre le conteneur en arrière-plan (flag -d) sur le port 8000
+      # 3. On change la redirection de ports : PORT_EXTERNE:PORT_INTERNE_DOCKER
+      # On choisit d'exposer le port 8090 de la machine virtuelle vers le 8090 du conteneur
       - name: Run Docker Container
-        run: docker run -d --name doordash-container -p 8000:8000 fee-service
+        run: docker run -d --name doordash-container -p 8090:8090 fee-service
 
-      # 4. On attend 3 secondes que l'API FastAPI démarre correctement
+      # 4. On attend que l'API démarre
       - name: Wait for API to start
         run: sleep 3
 
-      # 5. On teste les endpoints de base avec la commande 'curl'
+      # 5. On met à jour l'adresse des tests curl avec le port 8090
       - name: Run Smoke Tests (curl)
         run: |
           echo "Testing Root Endpoint..."
-          curl -f http://localhost:8000/
+          curl -f http://localhost:8090/
           
           echo "Testing Health Endpoint..."
-          curl -f http://localhost:8000/health
+          curl -f http://localhost:8090/health
 
       # 6. Étape de nettoyage : On arrête et supprime le conteneur, peu importe si les étapes d'avant ont réussi ou échoué
       - name: Cleanup Container
