@@ -28,14 +28,14 @@ jobs:
       - name: Wait for API to start
         run: sleep 3
 
-      # 5. On met à jour l'adresse des tests curl avec le port 8090
+     # 5. On teste les vrais endpoints définis dans ton main.py
       - name: Run Smoke Tests (curl)
         run: |
           echo "Testing Root Endpoint..."
           curl -f http://localhost:8090/
           
-          echo "Testing Health Endpoint..."
-          curl -f http://localhost:8090/health
+          echo "Testing Status Endpoint..."
+          curl -f http://localhost:8090/status/
 
       # 6. Étape de nettoyage : On arrête et supprime le conteneur, peu importe si les étapes d'avant ont réussi ou échoué
       - name: Cleanup Container
